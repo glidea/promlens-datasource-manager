@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let newDatasources = originalDatasources.concat(datasources);
                     chrome.storage.sync.set({datasources: newDatasources}, () => {
                         loadDatasources();
+                        updateContextMenus();
                     });
                 });
             };
@@ -60,12 +61,12 @@ function loadDatasources() {
                 <div class="card-body">
                     <h5 class="card-title">${datasource.name}</h5>
                     <h6 class="card-subtitle mb-2 text-muted">${datasource.url}</h6>
-                    <button class="btn btn-primary">Query</button>
+                    <button class="btn btn-primary">Explore</button>
                     <button class="btn btn-secondary">Edit</button>
                     <button class="btn btn-danger">Delete</button>
                 </div>`;
             div.querySelector('.btn-primary').addEventListener('click', () => {
-                queryDatasource(datasource);
+                exploreDatasource(datasource);
             });
             div.querySelector('.btn-secondary').addEventListener('click', () => {
                 showForm(index);
@@ -78,7 +79,7 @@ function loadDatasources() {
     });
 }
 
-function queryDatasource(datasource) {
+function exploreDatasource(datasource) {
     chrome.storage.sync.get('endpoint', (data) => {
         let endpoint = data.endpoint || '';
         if (!endpoint) {
@@ -99,6 +100,7 @@ function deleteDatasource(index) {
         datasources.splice(index, 1);
         chrome.storage.sync.set({datasources: datasources}, () => {
             loadDatasources();
+            updateContextMenus();
         });
     });
 }
@@ -174,6 +176,11 @@ function saveDatasource() {
         chrome.storage.sync.set({datasources: datasources}, () => {
             hideForm();
             loadDatasources();
+            updateContextMenus();
         });
     });
+}
+
+function updateContextMenus() {
+    chrome.runtime.sendMessage({command: "updateContextMenus"});
 }
